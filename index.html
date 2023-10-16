@@ -11,6 +11,17 @@
 
 
 
+
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        if (window.screen.availHeight < 800) {
+            canvas.height = 600;
+            canvas.width = 600;
+            canvasWidth = 600;
+            canvasHeight = 600;
+        }
+    </script>
     <script src="pawn_promotion.js"></script>
     <script src="pieces.js"></script>
     <script src="board.js"></script>

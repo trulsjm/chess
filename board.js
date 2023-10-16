@@ -1,7 +1,6 @@
-const canvas = document.getElementById("canvas");
-const canvasWidth = canvas.width;
-const canvasHeight = canvas.height;
-const squareSize = canvasWidth / 8;
+let canvasWidth = canvas.width;
+let canvasHeight = canvas.height;
+let squareSize = canvasWidth / 8;
 
 function drawBoard() {
     // Draw a chessboard on the canvas element

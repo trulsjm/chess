@@ -66,14 +66,7 @@ class Piece {
             let row = this.row;
             let col = this.col;
             let color = this.color;
-            let king = null;
-            for (let i = 0; i < 8; i++) {
-                for (let j = 0; j < 8 ; j++) {
-                    if (board[i][j] != null && board[i][j].type == "king" && board[i][j].color == color) {
-                        king = board[i][j];
-                    }
-                }
-            }
+            let king = (color == 1) ? white_king : black_king;
             // check backwards through the list so that removing an element doesn't mess up the index
             for (let i = legal_moves.length - 1; i >= 0; i--) {
                 // check if the king is moving
@@ -89,20 +82,34 @@ class Piece {
 
                 board_copy[row][col] = null;
                 board_copy[legal_moves[i][0]][legal_moves[i][1]] = this;
-                for (let j = 0; j < 8; j++) {
-                    for (let k = 0; k < 8; k++) {
-                        if (board_copy[j][k] != null && board_copy[j][k].color != color) {
-                            //create new object for it to work
-                            const piece = new Piece(j, k, board_copy[j][k].color, board_copy[j][k].type);
-                            let moves = piece.get_legal_moves(board_copy, false);
-                            for (let l = 0; l < moves.length; l++) {
-                                if (moves[l][0] == king.row && moves[l][1] == king.col) {
-                                    check = true;
-                                }
-                            }
+
+                // change this so that we impersonate the king as every piece and see if it has legal moves that capture another similar piece
+                const impersonators_list = ["rook", "bishop", "knight", "queen", "pawn"];
+                for (let i = 0; i < impersonators_list.length; i++) {
+                    const piece = new Piece(king.row, king.col, king.color, impersonators_list[i]);
+                    let moves = piece.get_legal_moves(board_copy, false);
+                    for (let j = 0; j < moves.length; j++) {
+                        let enemy_piece = board_copy[moves[j][0]][moves[j][1]];
+                        if (enemy_piece != null && enemy_piece.color != color && enemy_piece.type == impersonators_list[i]) {
+                            check = true
                         }
                     }
+                    
                 }
+                // for (let j = 0; j < 8; j++) {
+                //     for (let k = 0; k < 8; k++) {
+                //         if (board_copy[j][k] != null && board_copy[j][k].color != color) {
+                //             //create new object for it to work
+                //             const piece = new Piece(j, k, board_copy[j][k].color, board_copy[j][k].type);
+                //             let moves = piece.get_legal_moves(board_copy, false);
+                //             for (let l = 0; l < moves.length; l++) {
+                //                 if (moves[l][0] == king.row && moves[l][1] == king.col) {
+                //                     check = true;
+                //                 }
+                //             }
+                //         }
+                //     }
+                // }
 
                 if (check) {
                     legal_moves.splice(i, 1);
@@ -189,18 +196,11 @@ class Piece {
         
         drawBoard();
 
-        // check for checkmate
+        // check for checkmate and stalemate
         let no_moves = true;
         let check = false;
         let color = (turn == 1) ? 0 : 1;
-        let king = null;
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8 ; j++) {
-                if (board[i][j] != null && board[i][j].type == "king" && board[i][j].color == color) {
-                    king = board[i][j];
-                }
-            }
-        }
+        let king = (turn == 1) ? black_king : white_king;
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8 ; j++) {
                 if (board[i][j] != null && board[i][j].color == color) {
@@ -211,15 +211,21 @@ class Piece {
                 }
                 // check for check
                 if (board[i][j] != null && board[i][j].color != color) {
-                    //create new object for it to work
                     const piece = board[i][j];
                     let moves = piece.get_legal_moves(board, false);
                     for (let l = 0; l < moves.length; l++) {
                         if (moves[l][0] == king.row && moves[l][1] == king.col) {
                             check = true;
+                            break
                         }
                     }
                 }
+                if (check && !no_moves) {
+                    break;
+                }
+            }
+            if (check && !no_moves) {
+                break;
             }
         }
 
