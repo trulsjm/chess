@@ -150,15 +150,18 @@ class Piece {
             }
         }
         // check if the move should give the opponent the option to en passant
-        if (this.type == "pawn" && Math.abs(this.row - row) == 2) {
-            if (this.col - 1 >= 0 && board[row][col - 1] != null && board[row][col - 1].type == "pawn" && board[row][col - 1].color != this.color) {
-                board[row][col - 1].right_en_passant = true;
-            }
-            if (this.col + 1 < 8 && board[row][col + 1] != null && board[row][col + 1].type == "pawn" && board[row][col + 1].color != this.color) {
-                board[row][col + 1].left_en_passant = true;
+        if (this.type == "pawn") {
+            this.left_en_passant = false;
+            this.right_en_passant = false;
+            if (Math.abs(this.row - row) == 2) {
+                if (this.col - 1 >= 0 && board[row][col - 1] != null && board[row][col - 1].type == "pawn" && board[row][col - 1].color != this.color) {
+                    board[row][col - 1].right_en_passant = true;
+                }
+                if (this.col + 1 < 8 && board[row][col + 1] != null && board[row][col + 1].type == "pawn" && board[row][col + 1].color != this.color) {
+                    board[row][col + 1].left_en_passant = true;
+                }
             }
         }
-
         // check if the move was en passant
         if (this.type == "pawn" && this.col != col && board[row][col] == null) {
             board[this.row][col] = null;
