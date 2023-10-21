@@ -1,6 +1,15 @@
 let promotion_coords = [0, 0];
 
-function pawn_promotion() {
+function pawn_promotion(board, search = false) {
+
+    // check if the bot is the one moving
+    if (search || turn != pov) {
+        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "queen");
+        turn = !turn;
+        drawBoard();
+        return;
+    }
+
     // create a choice block for the user to choose which piece to promote to
     let choice_el = document.createElement("div");
     choice_el.id = "choice";
@@ -28,7 +37,7 @@ function pawn_promotion() {
     queen.style.borderRadius = "50%";
     queen.style.zIndex = "2";
     queen.onclick = function() {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], !turn, "queen");
+        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "queen");
         document.body.removeChild(choice_el);
         drawBoard();
     };
@@ -55,7 +64,7 @@ function pawn_promotion() {
     rook.style.borderRadius = "50%";
     rook.style.zIndex = "2";
     rook.onclick = function() {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], !turn, "rook");
+        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "rook");
         document.body.removeChild(choice_el);
         drawBoard();
     };
@@ -82,7 +91,7 @@ function pawn_promotion() {
     bishop.style.borderRadius = "50%";
     bishop.style.zIndex = "2";
     bishop.onclick = function() {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], !turn, "bishop");
+        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "bishop");
         document.body.removeChild(choice_el);
         drawBoard();
     };
@@ -109,7 +118,9 @@ function pawn_promotion() {
     knight.style.borderRadius = "50%";
     knight.style.zIndex = "2";
     knight.onclick = function() {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], !turn, "knight");
+        // TODO fix this
+        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "knight");
+            bot.move(board);
         document.body.removeChild(choice_el);
         drawBoard();
     };

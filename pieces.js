@@ -4,10 +4,46 @@ class Piece {
         this.col = col;
         this.color = color;
         this.type = type;
+        this.value = this.set_value(type);
         this.image_coords = this.set_image_coords();
         this.left_en_passant = false;
         this.right_en_passant = false;
     }
+
+    deep_copy() {
+        // Create a new instance of the Piece class with the same properties
+        const copy = new Piece(this.row, this.col, this.color, this.type);
+        copy.value = this.value;
+        copy.image_coords = this.image_coords.slice();
+        copy.left_en_passant = this.left_en_passant;
+        copy.right_en_passant = this.right_en_passant;
+        // You can add any other properties you want to copy here
+
+        return copy;
+    }
+
+    set_value(type) {
+        // set the value of the piece based on its type
+        if (type == "pawn") {
+            return 100;
+        }
+        if (type == "knight") {
+            return 300;
+        }
+        if (type == "bishop") {
+            return 320;
+        }
+        if (type == "rook") {
+            return 500;
+        }
+        if (type == "queen") {
+            return 900;
+        }
+        if (type == "king") {
+            return 10000;
+        }
+    }
+
     set_image_coords() {  
         // select a cut out of the image based on the piece's color and type
         let image_coords = [0, 0]
@@ -96,20 +132,6 @@ class Piece {
                     }
                     
                 }
-                // for (let j = 0; j < 8; j++) {
-                //     for (let k = 0; k < 8; k++) {
-                //         if (board_copy[j][k] != null && board_copy[j][k].color != color) {
-                //             //create new object for it to work
-                //             const piece = new Piece(j, k, board_copy[j][k].color, board_copy[j][k].type);
-                //             let moves = piece.get_legal_moves(board_copy, false);
-                //             for (let l = 0; l < moves.length; l++) {
-                //                 if (moves[l][0] == king.row && moves[l][1] == king.col) {
-                //                     check = true;
-                //                 }
-                //             }
-                //         }
-                //     }
-                // }
 
                 if (check) {
                     legal_moves.splice(i, 1);
@@ -122,8 +144,13 @@ class Piece {
         return legal_moves;
     }
 
-    move(row, col) {
+    move(row, col, board, search = false) {
+        if (!search) {
+            // console.log("actual move");
+            
+        }
         // move the piece to the given row and column
+        // console.log("move: " + this.type + " " + this.row + " " + this.col + " to " + row + " " + col + " search: " + search);
         board[this.row][this.col] = null;
         let moved_piece = this;
         // check if the move was castling
@@ -164,14 +191,6 @@ class Piece {
             board[this.row][col] = null;
         }
 
-        // check if the move was a pawn promotion
-        if (this.type == "pawn" && (row == 0 || row == 7)) {
-            promotion_coords = [row, col];
-            pawn_promotion();
-            turn = (turn == 1) ? 0 : 1;
-            return;
-        }
-
         // check if the move was rook, then set the castle flag to false
         if (this.type == "rook") {
             if (this.color == 1) {
@@ -189,18 +208,27 @@ class Piece {
             }
         }
 
+        // check if the move was a pawn promotion
+        if (this.type == "pawn" && (row == 0 || row == 7)) {
+            promotion_coords = [row, col];
+            pawn_promotion(board, search);
+            return;
+        }
+
         this.row = row;
         this.col = col;
         board[row][col] = moved_piece;
 
         
-        drawBoard();
+        if (!search) {
+            drawBoard();
+        }
 
         // check for checkmate and stalemate
         let no_moves = true;
         let check = false;
         let color = (turn == 1) ? 0 : 1;
-        let king = (turn == 1) ? black_king : white_king;
+        let king = (turn == 1) ? black_king : white_king; // this order to get the opposite king?
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8 ; j++) {
                 if (board[i][j] != null && board[i][j].color == color) {
@@ -239,6 +267,13 @@ class Piece {
         }
 
         if (no_moves) {
+            if (search) {
+                if (check) {
+                    return -10000;
+                } else {
+                    return 0;
+                }
+            }
             let message = (check) ? "Checkmate" : "Stalemate";
 
             let checkmate_el = document.createElement("div");
@@ -275,8 +310,13 @@ class Piece {
             return;
         }
 
-
         turn = (turn == 1) ? 0 : 1;
+        // console.log("turn is " + turn);
+
+        if (turn != pov && !search) {
+            console.log("bot's turn");
+            bot.move(board);
+        }
     }
 
     get_rook_moves(board) {
