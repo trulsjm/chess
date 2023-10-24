@@ -1,14 +1,4 @@
-let promotion_coords = [0, 0];
-
-function pawn_promotion(board, search = false) {
-
-    // check if the bot is the one moving
-    if (search || turn != pov) {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "queen");
-        turn = !turn;
-        drawBoard();
-        return;
-    }
+function pawn_promotion(square) {
 
     // create a choice block for the user to choose which piece to promote to
     let choice_el = document.createElement("div");
@@ -37,9 +27,7 @@ function pawn_promotion(board, search = false) {
     queen.style.borderRadius = "50%";
     queen.style.zIndex = "2";
     queen.onclick = function() {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "queen");
-        document.body.removeChild(choice_el);
-        drawBoard();
+        make_promotion(square, 6 + 8 * (turn), choice_el);
     };
     queen_image = document.createElement("img");
     if (turn) {
@@ -64,9 +52,7 @@ function pawn_promotion(board, search = false) {
     rook.style.borderRadius = "50%";
     rook.style.zIndex = "2";
     rook.onclick = function() {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "rook");
-        document.body.removeChild(choice_el);
-        drawBoard();
+        make_promotion(square, 5 + 8 * (turn), choice_el);
     };
     rook_image = document.createElement("img");
     if (turn) {
@@ -91,9 +77,7 @@ function pawn_promotion(board, search = false) {
     bishop.style.borderRadius = "50%";
     bishop.style.zIndex = "2";
     bishop.onclick = function() {
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "bishop");
-        document.body.removeChild(choice_el);
-        drawBoard();
+        make_promotion(square, 4 + 8 * (turn), choice_el);
     };
     bishop_image = document.createElement("img");
     if (turn) {
@@ -118,11 +102,7 @@ function pawn_promotion(board, search = false) {
     knight.style.borderRadius = "50%";
     knight.style.zIndex = "2";
     knight.onclick = function() {
-        // TODO fix this
-        board[promotion_coords[0]][promotion_coords[1]] = new Piece(promotion_coords[0], promotion_coords[1], turn, "knight");
-            bot.move(board);
-        document.body.removeChild(choice_el);
-        drawBoard();
+        make_promotion(square, 3 + 8 * (turn), choice_el);
     };
     knight_image = document.createElement("img");
     if (turn) {
@@ -141,4 +121,14 @@ function pawn_promotion(board, search = false) {
 
     document.body.appendChild(choice_el);
 
+}
+
+function make_promotion(square, piece, choice_el) {
+    board[square] = piece;
+    piece_positions[piece].push(square);
+
+    document.body.removeChild(choice_el);
+    drawBoard();
+    turn = !turn;
+    // TODO make the bot move
 }

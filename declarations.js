@@ -5,28 +5,29 @@ const ctx = canvas.getContext("2d");
 let pov = 1;
 let bot = null;
 
-// 1D array for speed
-// piece values: 0 = none, 1 = king, 2 = pawn, 3 = knight, 4 = bishop, 5 = rook, 6 = queen
-// color values: 0 = black, 8 = white
-
-let board = initialize_board();
 
 // keep track of squares of individual pieces for speed
 let piece_positions = {
     1: [4], // black king
-    2: [8, 9, 10, 12, 13, 14, 15], // black pawns
+    2: [8, 9, 10, 11, 12, 13, 14, 15], // black pawns
     3: [1, 6], // black knights
     4: [2, 5], // black bishops
     5: [0, 7], // black rooks
     6: [3], // black queens
     9: [60], // white king
-    10: [48, 49, 50, 52, 53, 54, 55], // white pawns
+    10: [48, 49, 50, 51, 52, 53, 54, 55], // white pawns
     11: [57, 62], // white knights
     12: [58, 61], // white bishops
     13: [56, 63], // white rooks
     14: [59], // white queens
     
 };
+
+// 1D array for speed
+// piece values: 0 = none, 1 = king, 2 = pawn, 3 = knight, 4 = bishop, 5 = rook, 6 = queen
+// color values: 0 = black, 8 = white
+
+let board = initialize_board();
 
 // set these variables equal to square that can be en passanted
 let white_en_passant = null;
@@ -85,7 +86,7 @@ board[7] = 5;
 board[8] = 2;
 board[9] = 2;
 board[10] = 2;
-// board[11] = 2;
+board[11] = 2;
 board[12] = 2;
 board[13] = 2;
 board[14] = 2;
@@ -105,10 +106,26 @@ board[55] = 2  + 8;
 board[54] = 2  + 8;
 board[53] = 2  + 8;
 board[52] = 2  + 8;
-// board[51] = 2  + 8;
+board[51] = 2  + 8;
 board[50] = 2  + 8;
 board[49] = 2  + 8;
 board[48] = 2  + 8;
+
+piece_positions = {
+    1: [4], // black king
+    2: [8, 9, 10, 11, 12, 13, 14, 15], // black pawns
+    3: [1, 6], // black knights
+    4: [2, 5], // black bishops
+    5: [0, 7], // black rooks
+    6: [3], // black queens
+    9: [60], // white king
+    10: [48, 49, 50, 51, 52, 53, 54, 55], // white pawns
+    11: [57, 62], // white knights
+    12: [58, 61], // white bishops
+    13: [56, 63], // white rooks
+    14: [59], // white queens
+    
+};
 
 return board
 }

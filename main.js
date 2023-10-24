@@ -77,16 +77,13 @@ canvas.addEventListener("click", function(event) {
 
 
     const selected_piece = board[selected_square];
-    console.log(selected_piece);
 
     if (selected_piece == 0 || Math.floor(selected_piece/8) != turn) {
         selected_square = null;
         return;
     }
-    console.log(selected_piece);
 
     legal_moves = get_legal_moves(selected_square);
-    console.log(legal_moves);
 
     // mark the selected square with an orange background
     drawBoard();
@@ -99,23 +96,17 @@ canvas.addEventListener("click", function(event) {
     draw_legal_moves(legal_moves);
 });
 
-function move_piece(from, to) {
+function move_piece(from, to, search = false) {
     // start simple, just move the piece
     // update the piece's position
-    const moved_piece = board[from];
-    piece_positions[moved_piece][piece_positions[moved_piece].indexOf(from)] = to;
+    let moved_piece = board[from];
     const to_piece = board[to];
-    if (to_piece != 0) {
-        piece_positions[to_piece].splice(piece_positions[to_piece].indexOf(to), 1);
-    }
 
     // check if the move is en passant
     if (moved_piece === 10 && to + 8 === white_en_passant) {
-        console.log("en passant");
         board[white_en_passant] = 0;
         piece_positions[2].splice(piece_positions[2].indexOf(white_en_passant), 1);
-    } else if (moved_piece === 2 && to - 8 === black_en_passant) { 
-        console.log("en passant");
+    } else if (moved_piece === 2 && to - 8 === black_en_passant) {
         board[black_en_passant] = 0;
         piece_positions[10].splice(piece_positions[10].indexOf(black_en_passant), 1);
     }
@@ -123,10 +114,8 @@ function move_piece(from, to) {
     // check if the move gives en passant
     console.log(to, from);
     if (moved_piece === 10 && to + 16 === from) {
-        console.log("en passant chance");
         black_en_passant = to;
     } else if (moved_piece === 2 && to - 16 === from) {
-        console.log("en passant chance");
         white_en_passant = to;
     } else {
         white_en_passant = null;
@@ -139,7 +128,6 @@ function move_piece(from, to) {
             white_left_castle = false;
             white_right_castle = false;
           if (from === 60 && to === 62) {
-            console.log("white left castle");
             board[61] = 13;
             board[63] = 0;
             piece_positions[13].push(61);
@@ -185,27 +173,60 @@ function move_piece(from, to) {
                 default:
                     break;
             }  
-         case 13:
-            switch (from) {
-                case 56:
-                    white_left_castle = false;
-                    break;
-                case 63:
-                    white_right_castle = false;
-                    break;
-                default:
-                    break;
-            }
+        case 13:
+        switch (from) {
+            case 56:
+                white_left_castle = false;
+                break;
+            case 63:
+                white_right_castle = false;
+                break;
             default:
-            break;
+                break;
         }
+        default:
+        break;
+    }
 
+    // check if the move is a pawn promotion
+    // TODO: add a popup to ask what piece to promote to if it is th pov's turn
 
+    // if the bot is moving, or the bot is searching, just promote to queen
+    if (search || pov != turn) { 
+        if (moved_piece === 2 && to >= 56) {
+            moved_piece = 6;
+            piece_positions[2].splice(piece_positions[2].indexOf(from), 1);
+            piece_positions[6].push(to);
+        } else if (moved_piece === 10 && to <= 7) {
+            moved_piece = 14;
+            piece_positions[10].splice(piece_positions[10].indexOf(from), 1);
+            piece_positions[14].push(to);
+        }
+    } else {
+        // if the player is moving, ask what piece to promote to
+        if ((moved_piece === 2 || moved_piece === 10) && (to >= 56 || to <= 7)) {
+            pawn_promotion(to);
+            piece_positions[moved_piece].splice(piece_positions[moved_piece].indexOf(from), 1);
 
+            if (to_piece != 0) {
+                piece_positions[to_piece].splice(piece_positions[to_piece].indexOf(to), 1);
+            }
+            return;
+        }
+    }
+
+    // default edit of the board 
+    if (to_piece != 0) {
+        piece_positions[to_piece].splice(piece_positions[to_piece].indexOf(to), 1);
+    }
 
     board[to] = moved_piece;
+    piece_positions[moved_piece][piece_positions[moved_piece].indexOf(from)] = to;
     board[from] = 0;
-    // update the board
+
+    // check if the game is over
+    is_game_over();
+
     // update the turn
     turn = (turn + 1) % 2;
 
@@ -213,7 +234,6 @@ function move_piece(from, to) {
 }
 
 function is_square_attacked(square, color) {
-    console.log("checking if square is attacked", square, "by color", color);
     // loop through all pieces and create an impostor for this square
     // and check if it can hit any pieces of the opposing color (color) 
     const real_piece = board[square];
@@ -221,16 +241,13 @@ function is_square_attacked(square, color) {
     for (let i = 1; i < 7; i++) { // TODO: can be optimized by checking queen at the same time as bishop and rook
         const impostor_piece = base + i;
         board[square] = impostor_piece;
-        const legal_moves = get_legal_moves(square, true);
-        if (impostor_piece === 4) {
-            console.log("legal moves for bishop", legal_moves);
-            console.log(board[legal_moves[4]]);
-            console.log();
+        const legal_moves = get_moves(square, true);
+        if (impostor_piece === 14) {
+            console.log(legal_moves, i);
         }
         for (let j = 0; j < legal_moves.length; j++) {
             if (board[legal_moves[j]] === impostor_piece + 16 * color - 8) {
                 board[square] = real_piece;
-                console.log("yes, by", impostor_piece, i);
                 return true;
             }
             
@@ -254,6 +271,31 @@ function restart() {
     turn = 1;
     selected_square = null;
     ask_pov();
+}
+
+function is_game_over() {
+    const base = (turn === 1) ? 0 : 8;
+    console.log("checking if game is over");
+    // get all legal moves for the other color
+    for (let i = base + 1; i < base + 7; i++) {
+        const pieces = piece_positions[i];
+        for (let j = 0; j < pieces.length; j++) {
+            const square = pieces[j];
+            turn = (turn + 1) % 2;
+            const these_legal_moves = get_legal_moves(square, true);
+            turn = (turn + 1) % 2;
+            if (these_legal_moves.length > 0) {
+                console.log(square, these_legal_moves);
+                return false;
+            }
+        }
+    }
+    // check if the king is in check
+    if (is_square_attacked(piece_positions[base+1][0], (turn + 1) % 2)) {
+        console.log("checkmate");
+        game_over_screen((turn + 1) % 2);
+    }
+    console.log("stalemate");
 }
 
 function ask_pov() {
@@ -318,4 +360,50 @@ function ask_pov() {
     div.appendChild(black);
     choice_element.appendChild(div);
     document.body.appendChild(choice_element);
+}
+
+function game_over_screen(winner) {
+    // TODO: make a popup that says who won and has a button to restart
+    let game_over_el = document.createElement("div");
+    game_over_el.style.position = "absolute";
+    game_over_el.style.display = "flex";
+    game_over_el.style.flexDirection = "column";
+    game_over_el.style.justifyContent = "center";
+    game_over_el.style.alignItems = "center";
+    game_over_el.style.width = "100%";
+    game_over_el.style.height = "100%";
+    game_over_el.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    game_over_el.style.zIndex = "1";
+
+    let game_over_text = document.createElement("div");
+    game_over_text.style.color = "white";
+    game_over_text.style.fontSize = "40px";
+    if (winner === 1) {
+        game_over_text.innerHTML = "White wins!";
+    } else if (winner === 0){
+        game_over_text.innerHTML = "Black wins!";
+    } else {
+        game_over_text.innerHTML = "Stalemate :/";
+    }
+
+    game_over_el.appendChild(game_over_text);
+
+    let restart_button = document.createElement("div");
+    restart_button.style.width = "200px";
+    restart_button.style.height = "100px";
+    restart_button.style.margin = "20px";
+    restart_button.style.backgroundColor = "white";
+    restart_button.style.borderRadius = "50%";
+    restart_button.style.zIndex = "2";
+    restart_button.style.display = "flex";
+    restart_button.style.justifyContent = "center";
+    restart_button.style.alignItems = "center";
+    restart_button.innerHTML = "Restart";
+    restart_button.onclick = function() {
+        document.body.removeChild(game_over_el);
+        restart();
+    };
+    game_over_el.appendChild(restart_button);
+
+    document.body.appendChild(game_over_el);
 }

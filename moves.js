@@ -1,4 +1,45 @@
 function get_legal_moves(piece_index, search = false){
+    // check if the king is in check after each move
+    const moves = get_moves(piece_index, search);
+    const piece = board[piece_index];
+    let legal_moves = [];
+    opposite_color = (turn + 1) % 2;
+    // if the piece moving is the king; we do it differently
+    if (piece == 1 || piece == 9){
+        for (let i = moves.length - 1; i >= 0; i--){
+            // check if the square is in check
+            const move = moves[i];
+            if (!is_square_attacked(move, opposite_color)){
+                legal_moves.push(move);
+            }
+        }
+        return legal_moves;
+    }
+
+    const king_square = piece_positions[turn * 8 + 1][0];
+
+    if (piece == 2){
+        console.log(king_square);
+    }
+
+    for (let i = 0; i < moves.length; i++){
+        // make the move on the board
+        const move = moves[i];
+        const to_square = board[move];
+        board[move] = piece;
+        board[piece_index] = 0;
+        if (!is_square_attacked(king_square, opposite_color)){
+            legal_moves.push(move);
+        }
+        //unmake the move
+        board[piece_index] = board[move];
+        board[move] = to_square;
+    }
+    console.log(legal_moves);
+    return legal_moves;
+}
+
+function get_moves(piece_index, search = false){
 
     piece_type = board[piece_index];
     if (piece_type == 0){
@@ -11,28 +52,29 @@ function get_legal_moves(piece_index, search = false){
         case 1: // Black king
         moves = [piece_index - 8, piece_index + 8, piece_index - 1, piece_index + 1, piece_index - 7, piece_index - 9, piece_index + 7, piece_index + 9];
         for (let i = moves.length - 1; i >= 0; i--){
+            let move = moves[i];
             // up moves
-            if (moves[i] < 0 || moves[i] < 0){
+            if (move < 0 || move < 0){
                 moves.splice(i, 1);
                 continue;
             }
             // down moves
-            if (moves[i] > 63 || moves[i] > 63){
+            if (move > 63 || move > 63){
                 moves.splice(i, 1);
                 continue;
             }
             // see if there is a piece of the same color in the way
-            if (board[moves[i]] > 0 && board[moves[i]] < 7){
+            if (board[move] > 0 && board[move] < 7){
                 moves.splice(i, 1);
                 continue;
             }
             // right moves
-            if (moves[i] % 8 == 0 && (i == 3 || i == 4 || i == 7)){
+            if (move % 8 == 0 && (i == 3 || i == 4 || i == 7)){
                 moves.splice(i, 1);
                 continue;
             }
             // left moves
-            if ((moves[i] + 1) % 8 == 0 && (i == 2 || i == 5 || i == 6)){
+            if ((move + 1) % 8 == 0 && (i == 2 || i == 5 || i == 6)){
                 moves.splice(i, 1);
                 continue;
             }
