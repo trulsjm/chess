@@ -1,4 +1,4 @@
-function get_legal_moves(piece_index){
+function get_legal_moves(piece_index, search = false){
 
     piece_type = board[piece_index];
     if (piece_type == 0){
@@ -37,6 +37,19 @@ function get_legal_moves(piece_index){
                 continue;
             }
         }
+        // castling
+        if (!search){
+            if (black_left_castle){
+                if (board[3] === 0 && board[2] === 0 && board[1] === 0 && !is_square_attacked(3, 1) && !is_square_attacked(4, 1) && !is_square_attacked(2, 1)){
+                    moves.push(2);
+                }
+            }
+            if (black_right_castle){
+                if (board[5] === 0 && board[6] === 0 && !is_square_attacked(5, 1) && !is_square_attacked(4, 1) && !is_square_attacked(6, 1)){
+                    moves.push(6);
+                }
+            }
+        } 
         return moves;
         case 2: // Black pawn
             // see if there is a piece in the way
@@ -56,6 +69,17 @@ function get_legal_moves(piece_index){
                 moves.push(piece_index + 9);
             }
             // TODO: en passant, maybe with a list or dictionary which keeps track for spesific squares: [false, false, false, false, true, false, true, false] for both the ranks that can be en passanted
+            // if an index is true, that means that column can be captured
+            if (piece_index > 31 && piece_index < 40){
+                // left en passant
+                if (black_en_passant === piece_index - 1 && (piece_index) % 8 != 0){
+                    moves.push(piece_index + 7);
+                }
+                // right en passant
+                if (black_en_passant === piece_index + 1 && (piece_index + 1) % 8 != 0){
+                    moves.push(piece_index + 9);
+                }
+            }
             // TODO: promotion
             return moves;
         case 3: // Black knight
@@ -122,7 +146,6 @@ function get_legal_moves(piece_index){
                     moves.push(current_index);
                 }
             }
-            console.log(moves);
             return moves;
         case 5: // Black rook
             directions = [-8, -1, 1, 8];
@@ -205,6 +228,19 @@ function get_legal_moves(piece_index){
                     continue;
                 }
             }
+            // castling
+            if (!search){
+                if (white_left_castle && !is_square_attacked(60, 0) && !is_square_attacked(59, 0) && !is_square_attacked(58, 0)){
+                    if (board[59] === 0 && board[58] === 0 && board[57] === 0){
+                        moves.push(58);
+                    }
+                }
+                if (white_right_castle && !is_square_attacked(60, 0) && !is_square_attacked(61, 0) && !is_square_attacked(62, 0)){
+                    if (board[61] === 0 && board[62] === 0){
+                        moves.push(62);
+                    }
+                }
+            }
             return moves;
         case 10: // White pawn
             // see if there is a piece in the way
@@ -224,6 +260,18 @@ function get_legal_moves(piece_index){
                 moves.push(piece_index - 9);
             }
             // TODO: en passant, maybe with a list or dictionary which keeps track for spesific squares: [false, false, false, false, true, false, true, false] for both the ranks that can be en passanted
+            // if an index is true, that means that column can be captured
+            if (piece_index > 23 && piece_index < 32){
+                // left en passant
+                if (white_en_passant === piece_index - 1 && (piece_index) % 8 != 0){
+                    moves.push(piece_index - 9);
+                }
+                // right en passant
+                if (white_en_passant === piece_index + 1 && (piece_index + 1) % 8 != 0){
+                    moves.push(piece_index - 7);
+                }
+
+            }
             // TODO: promotion
             return moves;
         case 11: // White knight
@@ -290,7 +338,6 @@ function get_legal_moves(piece_index){
                     moves.push(current_index);
                 }
             }
-            console.log(moves);
             return moves;
         case 13: // White rook
             directions = [-8, -1, 1, 8];

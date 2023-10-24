@@ -102,13 +102,108 @@ canvas.addEventListener("click", function(event) {
 function move_piece(from, to) {
     // start simple, just move the piece
     // update the piece's position
-    piece_positions[board[from]][piece_positions[board[from]].indexOf(from)] = to;
-    to_piece = board[to];
+    const moved_piece = board[from];
+    piece_positions[moved_piece][piece_positions[moved_piece].indexOf(from)] = to;
+    const to_piece = board[to];
     if (to_piece != 0) {
         piece_positions[to_piece].splice(piece_positions[to_piece].indexOf(to), 1);
     }
 
-    board[to] = board[from];
+    // check if the move is en passant
+    if (moved_piece === 10 && to + 8 === white_en_passant) {
+        console.log("en passant");
+        board[white_en_passant] = 0;
+        piece_positions[2].splice(piece_positions[2].indexOf(white_en_passant), 1);
+    } else if (moved_piece === 2 && to - 8 === black_en_passant) { 
+        console.log("en passant");
+        board[black_en_passant] = 0;
+        piece_positions[10].splice(piece_positions[10].indexOf(black_en_passant), 1);
+    }
+
+    // check if the move gives en passant
+    console.log(to, from);
+    if (moved_piece === 10 && to + 16 === from) {
+        console.log("en passant chance");
+        black_en_passant = to;
+    } else if (moved_piece === 2 && to - 16 === from) {
+        console.log("en passant chance");
+        white_en_passant = to;
+    } else {
+        white_en_passant = null;
+        black_en_passant = null;
+    }
+
+    // check if the move is a castle, and also remove castling if king moved
+    switch (moved_piece) {
+        case 9:
+            white_left_castle = false;
+            white_right_castle = false;
+          if (from === 60 && to === 62) {
+            console.log("white left castle");
+            board[61] = 13;
+            board[63] = 0;
+            piece_positions[13].push(61);
+            piece_positions[13].splice(piece_positions[13].indexOf(63), 1);
+
+          } else if (from === 60 && to === 58) {
+            board[59] = 13;
+            board[56] = 0;
+            piece_positions[13].push(59);
+            piece_positions[13].splice(piece_positions[13].indexOf(56), 1);
+          }
+          break;
+        case 1:
+            black_left_castle = false;
+            black_right_castle = false;
+          if (from === 4 && to === 6) {
+            board[5] = 5;
+            board[7] = 0;
+            piece_positions[5].push(5);
+            piece_positions[5].splice(piece_positions[5].indexOf(7), 1);
+
+          } else if (from === 4 && to === 2) {
+            board[3] = 5;
+            board[0] = 0;
+            piece_positions[5].push(3);
+            piece_positions[5].splice(piece_positions[5].indexOf(0), 1);
+          }
+          break;
+        default:
+          break;
+      }
+
+      // remove castling rights if the rook moves
+    switch (moved_piece) {
+        case 5:
+            switch (from) {
+                case 0:
+                    black_left_castle = false;
+                    break;
+                case 7:
+                    black_right_castle = false;
+                    break;
+                default:
+                    break;
+            }  
+         case 13:
+            switch (from) {
+                case 56:
+                    white_left_castle = false;
+                    break;
+                case 63:
+                    white_right_castle = false;
+                    break;
+                default:
+                    break;
+            }
+            default:
+            break;
+        }
+
+
+
+
+    board[to] = moved_piece;
     board[from] = 0;
     // update the board
     // update the turn
@@ -116,7 +211,34 @@ function move_piece(from, to) {
 
     drawBoard();
 }
-    
+
+function is_square_attacked(square, color) {
+    console.log("checking if square is attacked", square, "by color", color);
+    // loop through all pieces and create an impostor for this square
+    // and check if it can hit any pieces of the opposing color (color) 
+    const real_piece = board[square];
+    let base = (color === 1) ? 0 : 8; // 0 if white is attacker, 8 if black is attacker
+    for (let i = 1; i < 7; i++) { // TODO: can be optimized by checking queen at the same time as bishop and rook
+        const impostor_piece = base + i;
+        board[square] = impostor_piece;
+        const legal_moves = get_legal_moves(square, true);
+        if (impostor_piece === 4) {
+            console.log("legal moves for bishop", legal_moves);
+            console.log(board[legal_moves[4]]);
+            console.log();
+        }
+        for (let j = 0; j < legal_moves.length; j++) {
+            if (board[legal_moves[j]] === impostor_piece + 16 * color - 8) {
+                board[square] = real_piece;
+                console.log("yes, by", impostor_piece, i);
+                return true;
+            }
+            
+        }
+    }
+    board[square] = real_piece;
+    return false;
+}
 
 function restart() {
 

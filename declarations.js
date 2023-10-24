@@ -28,6 +28,10 @@ let piece_positions = {
     
 };
 
+// set these variables equal to square that can be en passanted
+let white_en_passant = null;
+let black_en_passant = null;
+
 
 let white_left_castle = true;
 let white_right_castle = true;
