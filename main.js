@@ -293,7 +293,7 @@ function is_game_over() {
     // check if the king is in check
     if (is_square_attacked(piece_positions[base+1][0], (turn + 1) % 2)) {
         console.log("checkmate");
-        game_over_screen((turn + 1) % 2);
+        game_over_screen(turn);
     }
     console.log("stalemate");
 }
