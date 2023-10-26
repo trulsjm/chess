@@ -127,38 +127,39 @@ function get_moves(piece_index, search = false){
         case 3: // Black knight
             moves = [piece_index - 17, piece_index - 15, piece_index - 10, piece_index - 6, piece_index + 6, piece_index + 10, piece_index + 15, piece_index + 17];
             for (let i = moves.length - 1; i >= 0; i--){
+                const move = moves[i];
                 // up moves
-                if (moves[i] < 0 || moves[i] < 0){
+                if (move < 0){
                     moves.splice(i, 1);
                     continue;
                 }
                 // down moves
-                if (moves[i] > 63 || moves[i] > 63){
+                if (move > 63){
                     moves.splice(i, 1);
                     continue;
                 }
                 // see if there is a piece of the same color in the way
-                if (board[moves[i]] > 0 && board[moves[i]] < 7){
+                if (board[move] > 0 && board[move] < 7){
                     moves.splice(i, 1);
                     continue;
                 }
                 // right moves
-                if (moves[i] % 8 == 0 && (i == 1 || i == 3 || i == 5 || i == 7)){
+                if (move % 8 == 0 && (i == 1 || i == 3 || i == 5 || i == 7)){
                     moves.splice(i, 1);
                     continue;
                 }
                 // left moves
-                if ((moves[i] + 1) % 8 == 0 && (i == 0 || i == 2 || i == 4 || i ==6)){
+                if ((move + 1) % 8 == 0 && (i == 0 || i == 2 || i == 4 || i ==6)){
                     moves.splice(i, 1);
                     continue;
                 }
                 // far right moves
-                if (moves[i] % 8 == 1 && (i == 3 || i == 6)){
+                if (move % 8 == 1 && (i == 3 || i == 5)){
                     moves.splice(i, 1);
                     continue;
                 }
                 // far left moves
-                if ((moves[i] + 1) % 8 == 1 && (i == 2 || i == 4)){
+                if (move % 8 == 6 && (i == 2 || i == 4)){
                     moves.splice(i, 1);
                     continue;
                 }
@@ -244,28 +245,29 @@ function get_moves(piece_index, search = false){
 
             moves = [piece_index - 8, piece_index + 8, piece_index - 1, piece_index + 1, piece_index - 7, piece_index - 9, piece_index + 7, piece_index + 9];
             for (let i = moves.length - 1; i >= 0; i--){
+                const move = moves[i];
                 // up moves
-                if (moves[i] < 0 || moves[i] < 0){
+                if (move < 0 || move < 0){
                     moves.splice(i, 1);
                     continue;
                 }
                 // down moves
-                if (moves[i] > 63 || moves[i] > 63){
+                if (move > 63 || move > 63){
                     moves.splice(i, 1);
                     continue;
                 }
                 // see if there is a piece of the same color in the way
-                if (board[moves[i]] > 0 && board[moves[i]] > 7){
+                if (board[move] > 0 && board[move] > 7){
                     moves.splice(i, 1);
                     continue;
                 }
                 // right moves
-                if (moves[i] % 8 == 0 && (i == 3 || i == 4 || i == 7)){
+                if (move % 8 == 0 && (i == 3 || i == 4 || i == 7)){
                     moves.splice(i, 1);
                     continue;
                 }
                 // left moves
-                if ((moves[i] + 1) % 8 == 0 && (i == 2 || i == 5 || i == 6)){
+                if ((move + 1) % 8 == 0 && (i == 2 || i == 5 || i == 6)){
                     moves.splice(i, 1);
                     continue;
                 }
@@ -319,38 +321,39 @@ function get_moves(piece_index, search = false){
         case 11: // White knight
         moves = [piece_index - 17, piece_index - 15, piece_index - 10, piece_index - 6, piece_index + 6, piece_index + 10, piece_index + 15, piece_index + 17];
             for (let i = moves.length - 1; i >= 0; i--){
+                const move = moves[i];
                 // up moves
-                if (moves[i] < 0 || moves[i] < 0){
+                if (move < 0 || move < 0){
                     moves.splice(i, 1);
                     continue;
                 }
                 // down moves
-                if (moves[i] > 63 || moves[i] > 63){
+                if (move > 63 || move > 63){
                     moves.splice(i, 1);
                     continue;
                 }
                 // see if there is a piece of the same color in the way
-                if (board[moves[i]] > 0 && board[moves[i]] > 7){
+                if (board[move] > 0 && board[move] > 7){
                     moves.splice(i, 1);
                     continue;
                 }
                 // right moves
-                if (moves[i] % 8 == 0 && (i == 1 || i == 3 || i == 5 || i == 7)){
+                if (move % 8 == 0 && (i == 1 || i == 3 || i == 5 || i == 7)){
                     moves.splice(i, 1);
                     continue;
                 }
                 // left moves
-                if ((moves[i] + 1) % 8 == 0 && (i == 0 || i == 2 || i == 4 || i ==6)){
+                if ((move + 1) % 8 == 0 && (i == 0 || i == 2 || i == 4 || i ==6)){
                     moves.splice(i, 1);
                     continue;
                 }
                 // far right moves
-                if (moves[i] % 8 == 1 && (i == 3 || i == 6)){
+                if (move % 8 == 1 && (i == 3 || i == 5)){
                     moves.splice(i, 1);
                     continue;
                 }
                 // far left moves
-                if ((moves[i] + 1) % 8 == 1 && (i == 2 || i == 4)){
+                if (move % 8 == 6 && (i == 2 || i == 4)){
                     moves.splice(i, 1);
                     continue;
                 }
