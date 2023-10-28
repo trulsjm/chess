@@ -1,24 +1,40 @@
-// makea a list that is from 1 to 1 000 000
-long_list = [];
-for (let i = 0; i < 10000000; i++) {
-    long_list.push(i*2);
+
+
+
+
+let move;
+let moved_piece;
+let from;
+let to;
+let captured_piece;
+
+
+function make_move_test(turn) {
+  const all_legal_moves = get_all_legal_moves(turn)
+  move = all_legal_moves[Math.floor(Math.random() * all_legal_moves.length)];
+  moved_piece = board[move[0]];
+  from = move[0];
+  to = move[1];
+  captured_piece = board[to];
+
+  // checking for en passant
+  if (moved_piece === 10) {
+      if ((to - from) % 8 != 0 && captured_piece === 0) {
+          captured_piece = board[to - 8];
+          
+      }
+  } else if (moved_piece === 2) {
+      if ((to - from) % 8 != 0 && captured_piece === 0) {
+          captured_piece = board[to + 8];
+      }
+    }
+  
+    move_piece(from, to, true);
+    drawBoard();
 }
 
-for (let i = 0; i < long_list.length; i++) {
-    el = long_list[i];
-    var1 = el;
-    var2 = el + 1;
-    var3 = el + 2;
-    var4 = el + 3;
-    var5 = el + 4;
-    var6 = el + 5;
-    var7 = el + 6;
-    var8 = el + 7;
-    var9 = el + 8;
-    var10 = el + 9;
-    
-    if (i % 100000 == 0) {
-        console.log(var1+var2+var3+var4+var5+var6+var7+var8+var9+var10);
-    }
-    
+function undo_move_test() {
+    move_piece(to, from, true);
+    board[to] = captured_piece;
+    drawBoard();
 }

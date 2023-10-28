@@ -112,7 +112,6 @@ function move_piece(from, to, search = false) {
     }
 
     // check if the move gives en passant
-    console.log(to, from);
     if (moved_piece === 10 && to + 16 === from) {
         black_en_passant = to;
     } else if (moved_piece === 2 && to - 16 === from) {
@@ -187,6 +186,33 @@ function move_piece(from, to, search = false) {
         default:
         break;
     }
+      // remove castling rights if the rook was captured
+      switch (to_piece) {
+        case 5:
+            switch (to) {
+                case 0:
+                    black_left_castle = false;
+                    break;
+                case 7:
+                    black_right_castle = false;
+                    break;
+                default:
+                    break;
+            }  
+        case 13:
+        switch (to) {
+            case 56:
+                white_left_castle = false;
+                break;
+            case 63:
+                white_right_castle = false;
+                break;
+            default:
+                break;
+        }
+        default:
+        break;
+    }
 
     // check if the move is a pawn promotion
     // TODO: add a popup to ask what piece to promote to if it is th pov's turn
@@ -194,19 +220,23 @@ function move_piece(from, to, search = false) {
     // if the bot is moving, or the bot is searching, just promote to queen
     if (search || pov != turn) { 
         if (moved_piece === 2 && to >= 56) {
+            // switch the pawn to a queen
             moved_piece = 6;
+            board[from] = 6;
             piece_positions[2].splice(piece_positions[2].indexOf(from), 1);
-            piece_positions[6].push(to);
+            piece_positions[6].push(from);
         } else if (moved_piece === 10 && to <= 7) {
             moved_piece = 14;
+            board[from] = 14;
             piece_positions[10].splice(piece_positions[10].indexOf(from), 1);
-            piece_positions[14].push(to);
+            piece_positions[14].push(from);
         }
     } else {
         // if the player is moving, ask what piece to promote to
         if ((moved_piece === 2 || moved_piece === 10) && (to >= 56 || to <= 7)) {
             pawn_promotion(to);
             piece_positions[moved_piece].splice(piece_positions[moved_piece].indexOf(from), 1);
+            board[from] = 0;
 
             if (to_piece != 0) {
                 piece_positions[to_piece].splice(piece_positions[to_piece].indexOf(to), 1);
@@ -215,7 +245,7 @@ function move_piece(from, to, search = false) {
         }
     }
 
-    // default edit of the board 
+    // default edit of the board
     if (to_piece != 0) {
         piece_positions[to_piece].splice(piece_positions[to_piece].indexOf(to), 1);
     }
@@ -225,12 +255,33 @@ function move_piece(from, to, search = false) {
     board[from] = 0;
 
     // check if the game is over
-    is_game_over();
+
+    if(!search) {
+        drawBoard();
+
+        const gameOver_and_winner = is_game_over(turn);
+        console.log(gameOver_and_winner);
+        if (gameOver_and_winner[0]) {
+            if (gameOver_and_winner[1] != null) {
+                console.log("checkmate");
+                game_over_screen(gameOver_and_winner[1]);
+            }
+            else {
+                console.log("stalemate");
+                game_over_screen(gameOver_and_winner[1]);
+            }
+        }
+    }
 
     // update the turn
     turn = (turn + 1) % 2;
+    
+    // make the bot move
+    if (turn != pov && !search) {
+        // whait a bit before making the bot move
+        setTimeout(bot_move, 100);
+    }
 
-    drawBoard();
 }
 
 function is_square_attacked(square, color) {
@@ -242,9 +293,7 @@ function is_square_attacked(square, color) {
         const impostor_piece = base + i;
         board[square] = impostor_piece;
         const legal_moves = get_moves(square, true);
-        if (impostor_piece === 14) {
-            console.log(legal_moves, i);
-        }
+
         for (let j = 0; j < legal_moves.length; j++) {
             if (board[legal_moves[j]] === impostor_piece + 16 * color - 8) {
                 board[square] = real_piece;
@@ -273,29 +322,19 @@ function restart() {
     ask_pov();
 }
 
-function is_game_over() {
+// check if the game is over, if true, return [true, winner], else return [false, null], stalemate is [true, null]
+function is_game_over(turn) { 
     const base = (turn === 1) ? 0 : 8;
-    console.log("checking if game is over");
     // get all legal moves for the other color
-    for (let i = base + 1; i < base + 7; i++) {
-        const pieces = piece_positions[i];
-        for (let j = 0; j < pieces.length; j++) {
-            const square = pieces[j];
-            turn = (turn + 1) % 2;
-            const these_legal_moves = get_legal_moves(square, true);
-            turn = (turn + 1) % 2;
-            if (these_legal_moves.length > 0) {
-                console.log(square, these_legal_moves);
-                return false;
-            }
-        }
-    }
+    const these_legal_moves = get_all_legal_moves((turn + 1) % 2);
     // check if the king is in check
-    if (is_square_attacked(piece_positions[base+1][0], (turn + 1) % 2)) {
-        console.log("checkmate");
-        game_over_screen(turn);
+    if (these_legal_moves.length === 0) {
+        if (is_square_attacked(piece_positions[base+1][0], turn)) {
+            return [true, turn]
+        }
+        return [true, null];
     }
-    console.log("stalemate");
+    return [false, null];
 }
 
 function ask_pov() {
@@ -334,10 +373,8 @@ function ask_pov() {
     white.onclick = function() {
         document.body.removeChild(choice_element);
         pov = 1;
-        // board = initialize_board();
-        // bot = new Chess_bot(0);  // the bot is the opposite color of the player
+        set_piece_values(pov);
         drawBoard();
-        console.log("we are white");
     };
 
     let black = document.createElement("div");
@@ -350,10 +387,10 @@ function ask_pov() {
     black.onclick = function() {
         document.body.removeChild(choice_element);
         pov = 0;
+        set_piece_values(pov);
         board = initialize_board();
-        // bot = new Chess_bot(1);  // the bot is the opposite color of the player
-        // bot.move(board); // the bot makes the first move
         drawBoard();
+        bot_move();
     };
 
     div.appendChild(white);

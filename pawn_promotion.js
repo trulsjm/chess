@@ -130,5 +130,8 @@ function make_promotion(square, piece, choice_el) {
     document.body.removeChild(choice_el);
     drawBoard();
     turn = !turn;
-    // TODO make the bot move
+    // make the bot move
+    if (turn != pov) {
+        bot_move();
+    }
 }

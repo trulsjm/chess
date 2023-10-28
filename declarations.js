@@ -1,5 +1,4 @@
-const pieces_image = new Image();
-pieces_image.src = "pieces.png";
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 const ctx = canvas.getContext("2d");
 
 let pov = 1;
@@ -10,7 +9,7 @@ let bot = null;
 let piece_positions = {
     1: [4], // black king
     2: [8, 9, 10, 11, 12, 13, 14, 15], // black pawns
-    3: [1, 6], // black knights
+    3: [28, 6], // black knights
     4: [2, 5], // black bishops
     5: [0, 7], // black rooks
     6: [3], // black queens
@@ -22,6 +21,7 @@ let piece_positions = {
     14: [59], // white queens
     
 };
+let piece_values = {}
 
 // 1D array for speed
 // piece values: 0 = none, 1 = king, 2 = pawn, 3 = knight, 4 = bishop, 5 = rook, 6 = queen
@@ -110,6 +110,15 @@ board[51] = 2  + 8;
 board[50] = 2  + 8;
 board[49] = 2  + 8;
 board[48] = 2  + 8;
+
+// 0, 5, 4,  0,  1, 5,  3, 0,
+// 2, 2, 0,  0,  0, 2,  2, 2,
+// 0, 0, 0,  4,  0, 0,  0, 0,
+// 6, 0, 2,  10, 2, 10, 10,
+// 0, 0, 0,  0,  0, 14, 0, 0, 
+// 0, 0, 10, 11, 0, 0,  0, 0, 
+// 0, 0, 0,  0,  0, 0,  0, 0, 
+//10, 0, 11, 9, 0, 0, 0, 0, 13]
 
 piece_positions = {
     1: [4], // black king

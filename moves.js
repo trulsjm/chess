@@ -9,18 +9,18 @@ function get_legal_moves(piece_index, search = false){
         for (let i = moves.length - 1; i >= 0; i--){
             // check if the square is in check
             const move = moves[i];
+            // move the king so it does not protect itself bruhhhh
+            board[piece_index] = 0;
+
             if (!is_square_attacked(move, opposite_color)){
                 legal_moves.push(move);
             }
+            // move the king back
+            board[piece_index] = piece;
         }
         return legal_moves;
     }
 
-    const king_square = piece_positions[turn * 8 + 1][0];
-
-    if (piece == 2){
-        console.log(king_square);
-    }
 
     for (let i = 0; i < moves.length; i++){
         // make the move on the board
@@ -28,14 +28,13 @@ function get_legal_moves(piece_index, search = false){
         const to_square = board[move];
         board[move] = piece;
         board[piece_index] = 0;
-        if (!is_square_attacked(king_square, opposite_color)){
+        if (!is_square_attacked(piece_positions[turn * 8 + 1][0], opposite_color)){
             legal_moves.push(move);
         }
         //unmake the move
         board[piece_index] = board[move];
         board[move] = to_square;
     }
-    console.log(legal_moves);
     return legal_moves;
 }
 

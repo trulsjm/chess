@@ -3,7 +3,6 @@ let canvasHeight = canvas.height;
 let squareSize = canvasWidth / 8;
 
 function drawBoard() {
-    console.log("drawing board and pieces");
     // Draw a chessboard on the canvas element
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "#EEEEEE";
@@ -15,7 +14,6 @@ function drawBoard() {
             ctx.fillRect(i * squareSize, j * squareSize, squareSize, squareSize);
         }
     }
-    console.log("board is drawn");
     
     // Draw the pieces on the canvas element
     // print everything from the piece_positions dictionary
@@ -94,4 +92,21 @@ function get_piece_image(piece){
             return white_queen_image;
 
     }
+}
+
+
+
+function print_board() {
+    // Print the board to the console
+    let board_string = "";
+    for (let i = 0; i < 64; i++) {
+        board_string += board[i] + " ";
+        if (board[i] < 10) {
+            board_string += " ";
+        }
+        if (i % 8 == 7) {
+            board_string += "\n";
+        }
+    }
+    console.log(board_string);
 }
