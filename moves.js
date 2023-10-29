@@ -1,4 +1,4 @@
-function get_legal_moves(piece_index, search = false){
+function get_legal_moves(piece_index, search = false, only_captures = false){
     // check if the king is in check after each move
     const moves = get_moves(piece_index, search);
     const piece = board[piece_index];
@@ -13,7 +13,13 @@ function get_legal_moves(piece_index, search = false){
             board[piece_index] = 0;
 
             if (!is_square_attacked(move, opposite_color)){
-                legal_moves.push(move);
+                if (!only_captures) {
+                    legal_moves.push(move);
+                } else {
+                    if (board[move] != 0){
+                        legal_moves.push(move);
+                    }
+                }
             }
             // move the king back
             board[piece_index] = piece;
@@ -25,15 +31,21 @@ function get_legal_moves(piece_index, search = false){
     for (let i = 0; i < moves.length; i++){
         // make the move on the board
         const move = moves[i];
-        const to_square = board[move];
+        const to_piece = board[move];
         board[move] = piece;
         board[piece_index] = 0;
         if (!is_square_attacked(piece_positions[turn * 8 + 1][0], opposite_color)){
-            legal_moves.push(move);
+            if (!only_captures) {
+                legal_moves.push(move);
+            } else {
+                if (to_piece != 0){
+                    legal_moves.push(move);
+                }
+            }
         }
         //unmake the move
         board[piece_index] = board[move];
-        board[move] = to_square;
+        board[move] = to_piece;
     }
     return legal_moves;
 }
