@@ -38,3 +38,50 @@ function undo_move_test() {
     board[to] = captured_piece;
     drawBoard();
 }
+
+const array1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const array2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const array3 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const array4 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+const array5 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+
+function for_loop_test() {
+    let result = 0;
+    const length1 = array1.length;
+    for (let i = 0; i < length1; i++) {
+        const length2 = array2.length;
+        for (let j = 0; j < length2; j++) {
+            const length3 = array3.length;
+            for (let k = 0; k < length3; k++) {
+                const length4 = array4.length;
+                for (let l = 0; l < length4; l++) {
+                    const length5 = array5.length;
+                    for (let m = 0; m < length5; m++) {
+                        result += array1[i] + array2[j] + array3[k] + array4[l] + array5[m];
+                    }
+                }
+            }
+        }
+    }
+    console.log(result);
+}
+
+
+function slow_for_loop_test() {
+    let result = 0;
+    for (let i = 0; i < array1.length; i++) {
+        for (let j = 0; j < array2.length; j++) {
+            for (let k = 0; k < array3.length; k++) {
+                for (let l = 0; l < array4.length; l++) {
+                    for (let m = 0; m < array5.length; m++) {
+                        result += array1[i] + array2[j] + array3[k] + array4[l] + array5[m];
+                    }
+                }
+            }
+        }
+    }
+    console.log(result);
+}
+
+// for_loop_test();
+// slow_for_loop_test();

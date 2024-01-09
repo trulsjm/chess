@@ -4,6 +4,16 @@ const search_depth = 4;
 function bot_move() {
     bot_pov = (pov + 1) % 2;
 
+    // set the square bias based on what stage of the game it is
+    let piece_sum = 0;
+    for (let i = 1; i < 7; i++) {
+        piece_sum += piece_positions[i].length;
+        piece_sum += piece_positions[i+8].length;
+    }
+    if (piece_sum < 16) {
+        square_bias = square_bias_late_game;
+    }
+
     const legal_moves = order_moves(get_all_legal_moves(bot_pov))
     const score_and_moveIndex = minimax(true, search_depth, -Infinity, Infinity);
     const moveIndex = score_and_moveIndex[1];
@@ -26,9 +36,26 @@ function bot_move() {
 }
 
 function minimax(maximizing_bot, depth, alpha, beta) { // Depth is the number of moves ahead the bot will look counting white and black individually
+    const original_alpha = alpha;
+    // if the position is in the transposition table, return the score
+    // const hash = get_zobrist_hash();
+    // if (transposition_table.has(hash)) {
+    //     table_cell = transposition_table.get(hash);
+    //     // set upper and lower bounds for the score and continue the search
+    //     if (table_cell[2] === "upper") {
+    //         beta = Math.min(beta, table_cell[0]);
+    //     } else if (table_cell[2] === "lower") {
+    //         alpha = Math.max(alpha, table_cell[0]);
+    //     } else {
+    //         return [table_cell[0], null];
+    //     }
+
+    // }
+
     if (depth == 0) {
         return [evaluate_board(), null];
     }
+
 
     if (maximizing_bot) {
         let maxEval = -20000;
@@ -75,6 +102,7 @@ function minimax(maximizing_bot, depth, alpha, beta) { // Depth is the number of
             // go deeper 
             move_piece(from, to, true);
             const evaluation_and_index = minimax(false, depth - 1, alpha, beta);
+
             turn = (turn + 1) % 2;  // switching the turn back after the move_piece function switches it
 
             // undo the castling rights
@@ -159,6 +187,16 @@ function minimax(maximizing_bot, depth, alpha, beta) { // Depth is the number of
                 break;
             }
         }
+
+        let flag = "exact";
+        if (maxEval <= original_alpha) {
+            flag = "upper";
+        } else if (maxEval >= beta) {
+            flag = "lower";
+        }
+
+        transposition_table.set(get_zobrist_hash(), [maxEval, depth, flag]);
+
         return [maxEval, moveIndex];
     }
     // minimizing bot
@@ -209,8 +247,8 @@ function minimax(maximizing_bot, depth, alpha, beta) { // Depth is the number of
 
             move_piece(from, to, true);
             const evaluation_and_index = minimax(true, depth - 1, alpha, beta);
-            turn = (turn + 1) % 2;  // switching the turn back after the move_piece function switches it
 
+            turn = (turn + 1) % 2;  // switching the turn back after the move_piece function switches it
 
             // Start undoing
 
@@ -293,6 +331,16 @@ function minimax(maximizing_bot, depth, alpha, beta) { // Depth is the number of
                 break;
             }
         }
+
+        let flag = "exact";
+        if (minEval <= original_alpha) {
+            flag = "upper";
+        } else if (minEval >= beta) {
+            flag = "lower";
+        }
+
+        transposition_table.set(get_zobrist_hash(), [minEval, depth, flag]);
+        
         return [minEval, moveIndex];
     }
 }
@@ -313,20 +361,17 @@ function set_piece_values () {
         6: 900 * piece_value_prefix,
         9: -20000 * piece_value_prefix,
         10: -100 * piece_value_prefix,
-        11: -300 * piece_value_prefix,
-        12: -300 * piece_value_prefix,
+        11: -320 * piece_value_prefix,
+        12: -330 * piece_value_prefix,
         13: -500 * piece_value_prefix,
         14: -900 * piece_value_prefix,
     }
 }
 
 function evaluate_board(search_captures = true) {
-    if (search_captures) {
-        if (turn === pov) {
-            return -search_all_captures(-Infinity, Infinity);
-        }
-        return search_all_captures(-Infinity, Infinity);
-    }
+    // if (search_captures) {
+    //     return search_all_captures(-Infinity, Infinity);
+    // }
 
     let score = 0;
     let prefix = (pov === 1) ? 1 : -1;
@@ -368,13 +413,33 @@ function get_all_legal_moves(color, only_captures = false) {
 
 function search_all_captures(alpha, beta, depth = 0) { // attempting to do it without the maximizing true or false 
     let evaluation = (turn === pov) ? -evaluate_board(false): evaluate_board(false); // do not search for captures here (false), just static evaluation
+    if (search_depth % 2 - 1 === 0) {
+        evaluation = -evaluation;
+    }
 
     if (evaluation >= beta) {
         return beta;
     }
     alpha = Math.max(alpha, evaluation);
 
-    const capture_moves = get_all_legal_moves(turn, true);
+    // transposition table stuff
+    // const original_alpha = alpha;
+    // const hash = get_zobrist_hash();
+    // if (transposition_table.has(hash)) {
+    //     table_cell = transposition_table.get(hash);
+    //     // set upper and lower bounds for the score and continue the search
+    //     if (table_cell[2] === "upper") {
+    //         beta = Math.min(beta, table_cell[0]);
+    //     } else if (table_cell[2] === "lower") {
+    //         alpha = Math.max(alpha, table_cell[0]);
+    //     } else {
+    //         return [table_cell[0], null];
+    //     }
+    // }
+    
+
+    const capture_moves = order_moves(get_all_legal_moves(turn, true));
+
 
     for (let i = 0; i < capture_moves.length; i++) {
 
@@ -409,9 +474,6 @@ function search_all_captures(alpha, beta, depth = 0) { // attempting to do it wi
                 black_made_en_passant = true;
             }
         }
-
-
-        // test on the first moves only
 
         // make the move
         move_piece(capture_moves[i][0], capture_moves[i][1], true);
@@ -499,21 +561,43 @@ function search_all_captures(alpha, beta, depth = 0) { // attempting to do it wi
         alpha = Math.max(alpha, evaluation);
     }
 
+    // let flag = "exact";
+    // if (evaluation <= original_alpha) {
+    //     flag = "upper";
+    // } else if (evaluation >= beta) {
+    //     flag = "lower";
+    // }
+
+    // transposition_table.set(get_zobrist_hash(), [evaluation, depth, flag]);
+
     return evaluation;
 }
 
+// order moves by captures first, and by value of each capture, and static evaluation for non captures
 function order_moves(moves) {
     const ordered_moves = [];
-    const captures = [];
-    const non_captures = [];
+    const scores = [];
     for (let i = 0; i < moves.length; i++) {
-        if (board[moves[i][1]] != 0) {
-            captures.push(moves[i]);
+        // check how valuable the capture is
+        move_score = 0;
+        const move = moves[i];
+        const moved_piece = board[move[0]];
+        let captured_piece = board[move[1]];
+        prefix = (pov === 1) ? -1 : 1;
+
+        if (captured_piece != 0) {
+            move_score += prefix * 10 * piece_values[captured_piece] - prefix * piece_values[moved_piece];
         } else {
-            non_captures.push(moves[i]);
+            move_score += prefix * square_bias[moved_piece][move[1]];
         }
+        
+        // place into the array based on the score
+        let j = 0;
+        while (j < scores.length && scores[j] > move_score) {
+            j++;
+        }
+        scores.splice(j, 0, move_score);
+        ordered_moves.splice(j, 0, move);
     }
-    ordered_moves.push(...captures);
-    ordered_moves.push(...non_captures);
     return ordered_moves;
 }
